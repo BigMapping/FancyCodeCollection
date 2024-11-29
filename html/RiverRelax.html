@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>River Relaxation</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #b2dbec;
+    }
+
+    .river {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      background: linear-gradient(180deg, #c3d9f2 0%, #94bde6 100%);
+      overflow: hidden;
+    }
+
+    .wave {
+      position: absolute;
+      width: 400%;
+      height: 90%;
+      background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1000 100" xmlns="http://www.w3.org/2000/svg"><path d="M0 50 Q 250 0, 500 50 T 1000 50 L 1000 100 L 0 100 Z" fill="%234A90E2"/></svg>') repeat-x;
+      animation: wave 12s linear infinite;
+      transform: translateX(0);
+      opacity: 0.6;
+    }
+
+    .wave:nth-child(2) {
+      animation-delay: -4s;
+      opacity: 0.4;
+    }
+
+    .wave:nth-child(3) {
+      animation-delay: -8s;
+      opacity: 0.2;
+    }
+
+    @keyframes wave {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(-50%);
+      }
+    }
+
+    .stone {
+      position: absolute;
+      background: #463E3F;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+      transition: transform 0.3s;
+    }
+
+    .stone:hover {
+      transform: scale(1.1);
+    }
+
+    .message {
+      position: absolute;
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      display: none;
+      z-index: 100;
+    }
+
+    /* 添加计时器和计数器样式 */
+    .stats-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      font-family: Arial, sans-serif;
+      z-index: 1000;
+    }
+
+    .timer, .click-count {
+      margin: 5px 0;
+      font-size: 18px;
+    }
+
+    .star {
+      position: absolute;
+      background: rgb(255, 255, 255);
+      border-radius: 0;  /* 移除圆形样式 */
+      animation: fall linear;
+      pointer-events: none;
+      /* 使用clip-path创建六角星 */
+      clip-path: polygon(
+        50% 0%, 61% 35%, 98% 35%, 68% 57%, 
+        79% 91%, 50% 70%, 21% 91%, 32% 57%, 
+        2% 35%, 39% 35%
+      );
+    }
+
+    /* 添加旋转动画 */
+    @keyframes fall {
+      0% {
+        transform: translateY(-10px) scale(1) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) scale(0.2) rotate(360deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 添加计时器和计数器容器 -->
+  <div class="stats-container">
+    <div class="timer">时间: 00:00:00</div>
+    <div class="click-count">点击次数: 0</div>
+  </div>
+
+  <div class="river">
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="stone" style="width: 60px; height: 45px; left: 20%; top: 60%;"></div>
+    <div class="stone" style="width: 80px; height: 60px; left: 50%; top: 70%;"></div>
+    <div class="stone" style="width: 40px; height: 30px; left: 75%; top: 65%;"></div>
+  </div>
+
+  <script>
+    // 添加消息数组
+    const messages = [
+        "平静如水",
+        "心如止水",
+        "静水流深",
+        "宁静致远",
+        "心旷神怡",
+        "波澜不惊"
+    ];
+
+    // 添加计时器和计数器逻辑
+    let startTime = new Date();
+    let clickCount = 0;
+    
+    function updateTimer() {
+      const now = new Date();
+      const diff = now - startTime;
+      const hours = Math.floor(diff / 3600000);
+      const minutes = Math.floor((diff % 3600000) / 60000);
+      const seconds = Math.floor((diff % 60000) / 1000);
+      
+      const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      document.querySelector('.timer').textContent = `时间: ${timeStr}`;
+    }
+
+    // 启计时器
+    setInterval(updateTimer, 1000);
+
+    // 修改石头点击事件，添加计数功能
+    document.querySelectorAll('.stone').forEach(stone => {
+      stone.addEventListener('click', function(e) {
+        e.stopPropagation();
+        
+        // 更新点击次数
+        clickCount++;
+        document.querySelector('.click-count').textContent = `点击次数: ${clickCount}`;
+        
+        // 移除现有的消息框
+        const existingMsg = document.querySelector('.message');
+        if (existingMsg) existingMsg.remove();
+        
+        // 创建新的消息框
+        const message = document.createElement('div');
+        message.className = 'message';
+        message.textContent = messages[Math.floor(Math.random() * messages.length)];
+        message.style.left = (e.clientX + 10) + 'px';
+        message.style.top = (e.clientY - 40) + 'px';
+        document.body.appendChild(message);
+        
+        // 显示消息
+        message.style.display = 'block';
+        
+        // 3秒后隐藏消息
+        setTimeout(() => {
+          message.remove();
+        }, 3000);
+      });
+    });
+
+    // Add ripple animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes ripple {
+        0% {
+          transform: scale(1);
+          opacity: 0.5;
+        }
+        100% {
+          transform: scale(100);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Add ripple effect on click
+    document.querySelector('.river').addEventListener('click', function(e) {
+      const ripple = document.createElement('div');
+      ripple.style.position = 'absolute';
+      ripple.style.width = '2px';
+      ripple.style.height = '2px';
+      ripple.style.background = 'rgba(255,255,255,0.5)';
+      ripple.style.borderRadius = '50%';
+      ripple.style.left = e.clientX + 'px';
+      ripple.style.top = e.clientY + 'px';
+      ripple.style.animation = 'ripple 2s linear';
+      
+      this.appendChild(ripple);
+      
+      setTimeout(() => {
+        ripple.remove();
+      }, 2000);
+    });
+
+    // 添加星星效果
+    function createStar() {
+        const star = document.createElement('div');
+        star.className = 'star';
+        
+        // 增大星星的尺寸范围：10-20像素
+        const size = Math.random() * 10 + 30;
+        const left = Math.random() * window.innerWidth;
+        const top = -Math.random() * 100;
+        const duration = Math.random() * 30 + 2;
+        
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        star.style.left = `${left}px`;
+        star.style.top = `${top}px`;
+        star.style.animationDuration = `${duration}s`;
+        
+        // 增强发光效果，添加金色光晕
+        star.style.boxShadow = `0 0 ${size}px ${size/2}px rgba(255, 255, 200, 0.8)`;
+        
+        // 随机初始旋转角度
+        star.style.transform = `rotate(${Math.random() * 360}deg)`;
+        
+        document.body.appendChild(star);
+        
+        star.addEventListener('animationend', () => {
+            star.remove();
+        });
+    }
+
+    // 定期创建星星
+    setInterval(createStar, 300); // 每300毫秒创建一个新星星
+  </script>
+</body>
+</html>
