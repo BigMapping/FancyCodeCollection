@@ -1,0 +1,226 @@
+<html></html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes">
+  <title>考勤证明</title>
+  <style type="text/css">
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #fff;
+    }
+
+    .container {
+      width: 80%; /* A4纸宽度的80%，留出一些页边距 */
+      max-width: 21cm; /* 接近A4纸的实际宽度 */
+      margin: 0 auto; /* 自动边距使容器居中 */
+      padding: 2cm 1.5cm; /* 设置上下2cm，左右1.5cm的页边距 */
+      box-sizing: border-box; /* 确保padding不增加容器的总宽度 */
+    }
+
+    #proof {
+      text-align: left;
+      margin-bottom: 1em; /* 证明文本和签名面板之间的间距 */
+    }
+
+    #signaturePad {
+      display: none;
+    }
+
+    #signatureCanvas {
+      border: 1px solid #6699cc;
+      margin-top: 1em; /* 签名面板和证明文本之间的间距 */
+    }
+
+    .container2 {
+      display: flex; /* 使用flex布局 */
+      justify-content: flex-end; /* 水平居中 */
+      align-items: flex-start; /* 垂直顶部对齐 */
+      width: 80%;
+      max-width: 21cm;
+      margin: 0 auto;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    .control-ops {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      margin: 0 5px;
+      cursor: pointer;
+    }
+
+    .saveimg {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div id="proof">
+    <h2 style="text-align: center">证明</h2>
+    <p style="text-indent: 4em;">兹证明甲乙丙公司员工张三在2024年11月11日正常出勤。此证明仅用于HR核实员工考勤信息。</p>
+    <p style="text-align: left;text-indent: 4em;">特此证明。</p>
+    <div>
+      <p style="text-align: center;text-indent: 15em;">部门负责人</p>
+    </div>
+    <div  style="text-align: right" class="saveimgs"></div>
+    <p style="text-align: center;text-indent: 15em;">2024年11月11日</p>
+  </div>
+  <div align="center">
+    <div id="sign">
+      <canvas id="myCanvas" width="300" height="100" style="border:1px solid #6699cc"></canvas>
+      <div class="control-ops control">
+        <button type="button" class="btn btn-primary" onclick="javascript:clearArea();return false;">清空画板</button>
+        Line width : <select id="selWidth" onchange="aaa()">
+        <option value="1">1</option>
+        <option value="3">3</option>
+        <option value="5" selected="selected">5</option>
+        <option value="7">7</option>
+        <option value="9">9</option>
+        <option value="11">11</option>
+      </select>
+        Color : <select id="selColor" onchange="aaa2()">
+        <option value="black" selected="selected">black</option>
+        <option value="blue">blue</option>
+        <option value="red">red</option>
+        <option value="green">green</option>
+        <option value="yellow">yellow</option>
+        <option value="gray">gray</option>
+      </select>
+        <button type="button" class="saveimg" onclick="javascript:saveImageInfo();return false;">保存签名</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  var mousePressed = false;
+  var lastX, lastY;
+  var ctx = document.getElementById('myCanvas').getContext("2d");
+  var c = document.getElementById("myCanvas");
+
+  var control = document.getElementsByClassName("control")[0];
+  var saveimgs = document.getElementsByClassName("saveimgs")[0];
+
+  window.onload = function() {
+    InitThis();
+  }
+
+  function saveImageInfo() {
+    var image = c.toDataURL("image/png");
+    var ctximg = document.createElement("span");
+    ctximg.innerHTML = "<img src='" + image + "' alt='from canvas'/>";
+    if (saveimgs.getElementsByTagName('span').length >= 1) {
+      var span_old = saveimgs.getElementsByTagName("span")[0];
+      saveimgs.replaceChild(ctximg, span_old)
+    } else {
+      saveimgs.appendChild(ctximg);
+    }
+    document.getElementById('sign').style.display = 'none';
+  }
+
+
+  var selected1, selected2;
+
+  function aaa() {
+    var sel = document.getElementById('selWidth');
+    var value = sel.selectedIndex;
+    return selected1 = sel[value].value;
+  }
+
+  function aaa2() {
+    var sel2 = document.getElementById('selColor');
+    var value = sel2.selectedIndex;
+    return selected2 = sel2[value].value;
+  }
+
+  function InitThis() {
+    //          触摸屏
+    c.addEventListener('touchstart', function(event) {
+      console.log(1)
+      if (event.targetTouches.length == 1) {
+        event.preventDefault(); // 阻止浏览器默认事件，重要
+        var touch = event.targetTouches[0];
+        mousePressed = true;
+        Draw(touch.pageX - this.offsetLeft, touch.pageY - this.offsetTop, false);
+      }
+
+    }, false);
+
+    c.addEventListener('touchmove', function(event) {
+      console.log(2)
+      if (event.targetTouches.length == 1) {
+        event.preventDefault(); // 阻止浏览器默认事件，重要
+        var touch = event.targetTouches[0];
+        if (mousePressed) {
+          Draw(touch.pageX - this.offsetLeft, touch.pageY - this.offsetTop, true);
+        }
+      }
+
+    }, false);
+
+    c.addEventListener('touchend', function(event) {
+      console.log(3)
+      if (event.targetTouches.length == 1) {
+        event.preventDefault(); // 阻止浏览器默认事件，防止手写的时候拖动屏幕，重要
+        //                  var touch = event.targetTouches[0];
+        mousePressed = false;
+      }
+    }, false);
+
+
+
+    //         鼠标
+    c.onmousedown = function(event) {
+      mousePressed = true;
+      Draw(event.pageX - this.offsetLeft, event.pageY - this.offsetTop, false);
+    };
+
+    c.onmousemove = function(event) {
+      if (mousePressed) {
+        Draw(event.pageX - this.offsetLeft, event.pageY - this.offsetTop, true);
+      }
+    };
+
+    c.onmouseup = function(event) {
+      mousePressed = false;
+    };
+  }
+
+  function Draw(x, y, isDown) {
+    if (isDown) {
+      ctx.beginPath();
+      ctx.strokeStyle = selected2;
+      ctx.lineWidth = selected1;
+      ctx.lineJoin = "round";
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(x, y);
+      ctx.closePath();
+      ctx.stroke();
+    }
+    lastX = x;
+    lastY = y;
+  }
+
+  function clearArea() {
+    // Use the identity matrix while clearing the canvas
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    // 清除签名图片
+    if (saveimgs.getElementsByTagName('span').length >= 1) {
+      var clearImg = saveimgs.getElementsByTagName('span')[0];
+      saveimgs.removeChild(clearImg);
+    }
+
+  }
+</script>
+</body>
+</html>
