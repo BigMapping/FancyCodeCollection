@@ -1,3 +1,4 @@
 # FancyCodeCollection
-## Signature.html 签名
-员工考勤电子签名
+一些有意思的代码的集合
+## Signature.html
+员工考勤证明
